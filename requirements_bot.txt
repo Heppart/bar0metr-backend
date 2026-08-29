@@ -4,5 +4,5 @@ sqlalchemy
 psycopg2-binary
 python-multipart
 pytz
-python-telegram-bot==13.7
+python-telegram-bot==20.6
 requests

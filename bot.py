@@ -2,6 +2,8 @@ import os
 import requests
 from telegram import Update, ReplyKeyboardMarkup, KeyboardButton, WebAppInfo
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
+import threading
+from flask import Flask
 
 TOKEN = os.getenv("BOT_TOKEN")
 API_URL = os.getenv("API_URL")
@@ -33,6 +35,17 @@ async def contact_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     contact = update.message.contact
     if contact:
         await update.message.reply_text("✅ Номер получен! Теперь вы можете отмечаться в заведениях.")
+
+health_app = Flask(__name__)
+
+@health_app.route('/')
+@health_app.route('/health')
+def health():
+    return "OK", 200
+
+def run_health_server():
+    port = int(os.environ.get("PORT", 10000))
+    health_app.run(host='0.0.0.0', port=port)
 
 def main():
     app = Application.builder().token(TOKEN).build()

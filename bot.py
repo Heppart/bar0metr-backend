@@ -39,9 +39,9 @@ async def main_async():
     app.add_handler(CommandHandler("start", start))
     app.add_handler(MessageHandler(filters.CONTACT, contact_handler))
     print("🤖 Бот успешно запущен и готов к работе!")
-    await app.run_polling()
+    # Главное: отключаем обработку сигналов, чтобы бот работал в любом потоке
+    await app.run_polling(stop_signals=[])
 
-# Если запускаем файл напрямую (для теста)
 if __name__ == "__main__":
     import asyncio
     asyncio.run(main_async())

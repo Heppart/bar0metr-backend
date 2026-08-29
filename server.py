@@ -2,7 +2,7 @@ import os
 import asyncio
 import threading
 from flask import Flask
-import bot  # ваш bot.py
+import bot  # импортируем ваш bot.py
 
 app = Flask(__name__)
 
@@ -22,7 +22,7 @@ def run_bot():
 
 if __name__ == "__main__":
     # Запускаем бота в отдельном потоке
-    bot_thread = threading.Thread(target=run_bot, daemon=True)
+    bot_thread = threading.Thread(target=run_bot, daemon=False)
     bot_thread.start()
     
     # Запускаем Flask-сервер (он будет слушать порт 10000)

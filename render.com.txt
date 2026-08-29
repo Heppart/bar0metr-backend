@@ -1,0 +1,1 @@
+postgresql://bar0metr_db_user:lMlqIY68qCclVAN3wtOXq2nNeuSYHHIz@dpg-da9dakss728c73de6b50-a/bar0metr_db

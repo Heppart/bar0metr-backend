@@ -1,0 +1,158 @@
+!DOCTYPE html
+html
+head
+    meta charset=UTF-8
+    meta name=viewport content=width=device-width, initial-scale=1.0
+    titleБар0метр — картаtitle
+    link rel=stylesheet href=httpsunpkg.comleaflet@1.9.4distleaflet.css 
+    script src=httpsunpkg.comleaflet@1.9.4distleaflet.jsscript
+    style
+         { margin 0; padding 0; }
+        body { font-family system-ui, sans-serif; background #0a0a0f; }
+        #map { height 100vh; width 100%; }
+        .legend {
+            position fixed;
+            bottom 20px;
+            left 20px;
+            background rgba(0,0,0,0.8);
+            color #fff;
+            padding 12px 18px;
+            border-radius 12px;
+            font-size 14px;
+            z-index 1000;
+            backdrop-filter blur(10px);
+            border 1px solid #333;
+        }
+        .legend span { color #00ff88; font-weight bold; }
+    style
+head
+body
+    div id=mapdiv
+    div class=legend📍 spanБар0метрspan — живые люди в заведенияхdiv
+
+    script
+         --- ИНИЦИАЛИЗАЦИЯ КАРТЫ ---
+        const map = L.map('map').setView([55.7558, 37.6173], 13);
+        L.tileLayer('https{s}.tile.openstreetmap.org{z}{x}{y}.png', {
+            attribution '© OpenStreetMap'
+        }).addTo(map);
+
+         --- ПОЛУЧЕНИЕ ГЕОЛОКАЦИИ ПОЛЬЗОВАТЕЛЯ ---
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (pos) = {
+                    const { latitude, longitude } = pos.coords;
+                    map.setView([latitude, longitude], 15);
+                     Отправляем гео на сервер (если нужно)
+                    fetch('apiset_location', {
+                        method 'POST',
+                        headers { 'Content-Type' 'applicationjson' },
+                        body JSON.stringify({ lat latitude, lon longitude })
+                    });
+                },
+                () = { console.log('Геолокация не доступна'); }
+            );
+        }
+
+         --- ЗАГРУЗКА ЗАВЕДЕНИЙ ---
+        async function loadVenues() {
+            try {
+                const res = await fetch('httpsВАШ-БЭКЕНД.onrender.commap');
+                const data = await res.json();
+                
+                data.venues.forEach(venue = {
+                     Цвет маркера в зависимости от количества людей
+                    let color = '#555';
+                    if (venue.checkins  5) color = '#00ff88';
+                    else if (venue.checkins  2) color = '#ffaa00';
+                    else if (venue.checkins  0) color = '#ff6644';
+                    
+                    const marker = L.circleMarker([venue.lat, venue.lon], {
+                        radius 10 + Math.min(venue.checkins  2, 20),
+                        fillColor color,
+                        color '#fff',
+                        weight 2,
+                        opacity 1,
+                        fillOpacity 0.7
+                    }).addTo(map);
+                    
+                    const demoText = venue.is_demo  '🔬 Демо-доступ'  '';
+                    marker.bindPopup(`
+                        b${venue.name}bbr
+                        ${venue.address  ''}br
+                        👥 ${venue.checkins} человек внутриbr
+                        ${demoText}
+                        brbr
+                        button onclick=checkIn(${venue.id}) style=
+                            background #00ff88; border none; padding 8px 16px;
+                            border-radius 8px; font-weight bold; cursor pointer;
+                        ✅ Я здесьbutton
+                        button onclick=setInterest(${venue.id}) style=
+                            background #ffaa00; border none; padding 8px 16px;
+                            border-radius 8px; font-weight bold; cursor pointer;
+                            margin-left 8px;
+                        ❤️ Мне окbutton
+                    `);
+                });
+            } catch (e) {
+                console.error('Ошибка загрузки', e);
+            }
+        }
+
+         --- ФУНКЦИИ ДЛЯ КНОПОК В ПОПАПАХ ---
+        async function checkIn(venueId) {
+             Получаем геолокацию
+            navigator.geolocation.getCurrentPosition(async (pos) = {
+                const { latitude, longitude } = pos.coords;
+                const tg_id = window.Telegram.WebApp.initDataUnsafe.user.id  'test_user';
+                
+                const res = await fetch('httpsВАШ-БЭКЕНД.onrender.comcheckin', {
+                    method 'POST',
+                    headers { 'Content-Type' 'applicationjson' },
+                    body JSON.stringify({
+                        tg_id String(tg_id),
+                        venue_id venueId,
+                        lat latitude,
+                        lon longitude
+                    })
+                });
+                
+                if (res.ok) {
+                    alert('✅ Вы отмечены в заведении!');
+                    location.reload();
+                } else {
+                    const err = await res.json();
+                    alert('❌ ' + (err.detail  'Ошибка'));
+                }
+            });
+        }
+
+        async function setInterest(venueId) {
+            const tg_id = window.Telegram.WebApp.initDataUnsafe.user.id  'test_user';
+            const res = await fetch('httpsВАШ-БЭКЕНД.onrender.cominterest', {
+                method 'POST',
+                headers { 'Content-Type' 'applicationjson' },
+                body JSON.stringify({
+                    tg_id String(tg_id),
+                    venue_id venueId
+                })
+            });
+            
+            if (res.ok) {
+                alert('❤️ Вы отметили, что готовы к общению!');
+            } else {
+                alert('❌ Ошибка');
+            }
+        }
+
+         --- ЗАПУСК ---
+        loadVenues();
+
+         Подключаемся к Telegram WebApp (если открыто внутри Telegram)
+        if (window.Telegram.WebApp) {
+            window.Telegram.WebApp.ready();
+            window.Telegram.WebApp.expand();
+        }
+    script
+body
+html

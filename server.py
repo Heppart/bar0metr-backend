@@ -1,7 +1,8 @@
 import os
+import asyncio
 import threading
 from flask import Flask
-import bot  # импортируем ваш bot.py как модуль
+import bot  # ваш bot.py
 
 app = Flask(__name__)
 
@@ -11,8 +12,13 @@ def health():
     return "OK", 200
 
 def run_bot():
-    # Запускаем основную функцию бота
-    bot.main()
+    # Создаём новый event loop для этого потока
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    try:
+        loop.run_until_complete(bot.main_async())
+    finally:
+        loop.close()
 
 if __name__ == "__main__":
     # Запускаем бота в отдельном потоке

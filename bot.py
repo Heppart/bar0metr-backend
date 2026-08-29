@@ -34,13 +34,14 @@ async def contact_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if contact:
         await update.message.reply_text("✅ Номер получен! Теперь вы можете отмечаться в заведениях.")
 
-def main():
+async def main_async():
     app = Application.builder().token(TOKEN).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(MessageHandler(filters.CONTACT, contact_handler))
-    print("🤖 Бот запущен и готов к работе!")
-    app.run_polling()
+    print("🤖 Бот успешно запущен и готов к работе!")
+    await app.run_polling()
 
-# Если захотите запускать бота отдельно (для теста), можно оставить:
+# Если запускаем файл напрямую (для теста)
 if __name__ == "__main__":
-    main()
+    import asyncio
+    asyncio.run(main_async())
